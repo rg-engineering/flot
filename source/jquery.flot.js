@@ -1346,6 +1346,8 @@ Licensed under the MIT license.
                     setTransformationHelpers(axis);
                     setEndpointTicks(axis, series);
 
+                    console.log('+++');
+
                     // find labelWidth/Height for axis
                     measureTickLabels(axis);
                 });
@@ -1806,7 +1808,120 @@ Licensed under the MIT license.
             // A draw implies that either the axes or data have changed, so we
             // should probably update the overlay highlights as well.
             triggerRedrawOverlay();
+
+
+           ShowTickLabels();
+
+            
         }
+
+
+        //*******************************************************************
+        // this is to overcome problem with colored tixks and axis labels
+        // xxx
+        //*******************************************************************
+        function ShowTickLabels() {
+            console.log('#1#1#');
+
+            $.each(allAxes(), function (_, axis) {
+                if (!axis.show) {
+                    return;
+                }
+
+                
+                ctx.save();
+                ctx.translate(plotOffset.left, plotOffset.top);
+
+                ctx.fillStyle = axis.options.font.color;
+                ctx.textAlign = "left";
+                ctx.font = axis.options.font.size + "px " + axis.options.font.style + " " + axis.options.font.family;
+                var t = axis.tickLength,
+                    minorTicks = axis.showMinorTicks,
+                    minorTicksNr = MINOR_TICKS_COUNT_CONSTANT,
+                    edges = findEdges(axis),
+                    x = edges.x,
+                    y = edges.y,
+                    i = 0;
+
+
+                if (axis.direction === "x") {
+                    y = y+15;
+
+                } else {
+                    x= x-40;
+
+                }
+
+                    switch (axis.options.showTickLabels) {
+                        case 'none':
+                            break;
+                        case 'endpoints':
+                            console.log('endpoints');
+                            //labelBoxes.push(drawAxisLabel(axis.ticks[0], labelBoxes));
+                            //labelBoxes.push(drawAxisLabel(axis.ticks[axis.ticks.length - 1], labelBoxes));
+                            break;
+                        case 'major':
+                            console.log('major');
+                            //labelBoxes.push(drawAxisLabel(axis.ticks[0], labelBoxes));
+                            //labelBoxes.push(drawAxisLabel(axis.ticks[axis.ticks.length - 1], labelBoxes));
+                            for (i = 0; i < axis.ticks.length; i++) {
+                                //labelBoxes.push(drawAxisLabel(axis.ticks[i], labelBoxes));
+                                var v = axis.ticks[i].v,
+                                    xoff = 0,
+                                    yoff = 0,
+                                    xminor = 0,
+                                    yminor = 0,
+                                    j;
+
+                                if (!isNaN(v) && v >= axis.min && v <= axis.max) {
+
+                                    if (axis.direction === "x") {
+                                        x = axis.p2c(v);
+                                        yoff = t;
+
+                                        if (axis.position === "top") {
+                                            yoff = -yoff;
+                                        }
+                                    } else {
+                                        y = axis.p2c(v);
+                                        xoff = t;
+
+                                        if (axis.position === "left") {
+                                            xoff = -xoff;
+                                        }
+                                    }
+
+                                    if (axis.direction === "x") {
+                                        x = alignPosition(ctx.lineWidth, x);
+                                        
+                                    } else {
+                                        y = alignPosition(ctx.lineWidth, y);
+                                        
+                                    }
+
+                                    console.log('show ' + axis.ticks[i].label + " on " + x + "/" + y);
+                                    ctx.fillText(axis.ticks[i].label, x, y);
+                                }
+                            }
+                            break;
+                        case 'all':
+                            console.log('all');
+                            //labelBoxes.push(drawAxisLabel(axis.ticks[0], []));
+                            //labelBoxes.push(drawAxisLabel(axis.ticks[axis.ticks.length - 1], labelBoxes));
+                            for (i = 1; i < axis.ticks.length - 1; ++i) {
+                                //labelBoxes.push(drawAxisLabel(axis.ticks[i], labelBoxes));
+                            }
+                            break;
+                    }
+
+
+                ctx.restore();
+                    
+                
+            });
+        }
+
+
 
         function extractRange(ranges, coord) {
             var axis, from, to, key, axes = allAxes();
@@ -2310,28 +2425,43 @@ Licensed under the MIT license.
                     return;
                 }
 
+                /*
+                var ctx = surface.context;
+                ctx.fillStyle = "red";
+                ctx.textAlign = "center";
+                ctx.font = "8px Arial";
+                */
                 switch (axis.options.showTickLabels) {
                     case 'none':
                         break;
                     case 'endpoints':
-                        labelBoxes.push(drawAxisLabel(axis.ticks[0], labelBoxes));
-                        labelBoxes.push(drawAxisLabel(axis.ticks[axis.ticks.length - 1], labelBoxes));
+                        console.log('endpoints');
+                        //labelBoxes.push(drawAxisLabel(axis.ticks[0], labelBoxes));
+                        //labelBoxes.push(drawAxisLabel(axis.ticks[axis.ticks.length - 1], labelBoxes));
                         break;
                     case 'major':
-                        labelBoxes.push(drawAxisLabel(axis.ticks[0], labelBoxes));
-                        labelBoxes.push(drawAxisLabel(axis.ticks[axis.ticks.length - 1], labelBoxes));
+                        console.log('major');
+                        //labelBoxes.push(drawAxisLabel(axis.ticks[0], labelBoxes));
+                        //labelBoxes.push(drawAxisLabel(axis.ticks[axis.ticks.length - 1], labelBoxes));
                         for (i = 1; i < axis.ticks.length - 1; ++i) {
-                            labelBoxes.push(drawAxisLabel(axis.ticks[i], labelBoxes));
+                            //labelBoxes.push(drawAxisLabel(axis.ticks[i], labelBoxes));
+
+                          
+                            
+                            //ctx.fillText(axis.ticks[i].label, 10, 50); 
+
                         }
                         break;
                     case 'all':
-                        labelBoxes.push(drawAxisLabel(axis.ticks[0], []));
-                        labelBoxes.push(drawAxisLabel(axis.ticks[axis.ticks.length - 1], labelBoxes));
+                        console.log('all');
+                        //labelBoxes.push(drawAxisLabel(axis.ticks[0], []));
+                        //labelBoxes.push(drawAxisLabel(axis.ticks[axis.ticks.length - 1], labelBoxes));
                         for (i = 1; i < axis.ticks.length - 1; ++i) {
-                            labelBoxes.push(drawAxisLabel(axis.ticks[i], labelBoxes));
+                            //labelBoxes.push(drawAxisLabel(axis.ticks[i], labelBoxes));
                         }
                         break;
                 }
+                
             });
         }
 
